@@ -12,12 +12,12 @@ import (
 )
 
 const (
-	defaultName = "Melih Can"
+	defaultText = "You can go"
 )
 
 var (
 	addr = flag.String("addr", "localhost:8080", "the address to connect to")
-	name = flag.String("name", defaultName, "Name to greet")
+	text = flag.String("text", defaultText, "Name to greet")
 )
 
 func main() {
@@ -27,13 +27,13 @@ func main() {
 		log.Fatalf("did not connect: %v", err)
 	}
 	defer conn.Close()
-	c := pb.NewGreeterClient(conn)
+	c := pb.NewTranslatorClient(conn)
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	r, err := c.SayHello(ctx, &pb.HelloRequest{Name: *name})
+	r, err := c.Translate(ctx, &pb.TranslationRequest{Text: *text, SourceLanguage: "en-US", TargetLanguage: "tr"})
 	if err != nil {
 		log.Fatalf("could not greet: %v", err)
 	}
-	log.Printf("Greetings: %s", r.GetMessage())
+	log.Printf("Translated Text: %s", r.GetTranslatedText())
 }

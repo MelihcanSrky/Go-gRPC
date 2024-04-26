@@ -16,12 +16,21 @@ var (
 )
 
 type server struct {
-	pb.UnimplementedGreeterServer
+	pb.UnimplementedTranslatorServer
 }
 
-func (s *server) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloReply, error) {
-	log.Printf("Received: %v", in.GetName())
-	return &pb.HelloReply{Message: "Hello " + in.GetName()}, nil
+func (s *server) Translate(ctx context.Context, req *pb.TranslationRequest) (*pb.TranslationResponse, error) {
+	translatedText := reverseString(req.Text)
+	fmt.Printf("Translated Text: %s", translatedText)
+	return &pb.TranslationResponse{TranslatedText: translatedText}, nil
+}
+
+func reverseString(s string) string {
+	runes := []rune(s)
+	for i, j := 0, len(runes)-1; i < j; i, j = i+1, j-1 {
+		runes[i], runes[j] = runes[j], runes[i]
+	}
+	return string(runes)
 }
 
 func main() {
@@ -31,9 +40,9 @@ func main() {
 		log.Fatalf("failed to listen : %v", err)
 	}
 	s := grpc.NewServer()
-	pb.RegisterGreeterServer(s, &server{})
+	pb.RegisterTranslatorServer(s, &server{})
 	log.Printf("server listening at %v", lis.Addr())
 	if err := s.Serve(lis); err != nil {
-		log.Fatal("failed to serve: %v", err)
+		log.Fatalf("failed to serve: %v", err)
 	}
 }
